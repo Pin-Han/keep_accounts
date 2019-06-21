@@ -61,13 +61,17 @@ var UIController = (function () {
         inputDescription: '.add__description',
         inputValue: '.add__value',
         inputBtn: '.add__btn',
+        incomeContainer: '.income__list',
+        expenseContainer: '.expenses__list',
+
     };
     return {
         getinput: function () {
             return {
                 type: document.querySelector(DOMstring.inputType).value,
                 description: document.querySelector(DOMstring.inputDescription).value,
-                value: document.querySelector(DOMstring.inputValue).value,
+                value: parseFloat(document.querySelector(DOMstring.inputValue).value),
+                //parsefloat 把字串變成數字
             }
             // var type = document.querySelector(".add__type").value;
             // // type -> will be either inc or exp 
@@ -76,23 +80,40 @@ var UIController = (function () {
         },
         addListItem: function (obj, type) {
             //create HTML string with placeholder text
-            var html, newHtml;
+            var html, newHtml, element;
             //如果改成雙引號 將會與class=後面的雙引號變成一對
-
+            console.log(obj);
             if (type === 'inc') {
-                html = '<div class="item clearfix" id="income-%id%"><div class="item__description">$description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                element = DOMstring.incomeContainer;
+                html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
 
             } else if (type === 'exp') {
+                element = DOMstring.expenseContainer;
                 html = '<div class="item clearfix" id="expense-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                // html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
 
             }
 
             //replace the placeholder text with some actual data
             newHtml = html.replace('%id%', obj.id);
-            newHtml = newHtml.replace('%description', obj.description);
-            newHtml = newHtml.replace('%value', obj.value);
+            newHtml = newHtml.replace('%description%', obj.description);
+            newHtml = newHtml.replace('%value%', obj.value);
 
             //Insert the HTML into the DOM
+            document.querySelector(element).insertAdjacentHTML('beforeend', newHtml);
+        },
+        clearFields: function () {
+            var fields, fieldsArr;
+            fields = document.querySelectorAll(DOMstring.inputDescription + ', ' + DOMstring.inputValue); //類似Css的選擇器
+            // console.log(fields);
+            //由於fields不是一個陣列 ，透過array.prototype.slice.call 轉成陣列型態
+            fieldsArr = Array.prototype.slice.call(fields);
+            // console.log(fieldsArr);
+            fieldsArr.forEach(function (current, index, array) {
+                console.log(current, current.value, index, array);
+                current.value = "";
+            });
+            fieldsArr[0].focus(); //fieldArr[0] 為輸入描述的欄位 .focus 為focus在輸入的欄位上
         },
         getDOMstring: function () {
             //把DOMstring傳出去
@@ -113,21 +134,34 @@ var controller = (function (budgetCtrl, UICtrl) {
                 ctrlAddItem();
             }
         });
-    }
+    };
+    var updatedBudget = function () {
+        //1.Calculate the budget
+
+        //2.return the budget
+
+        //3.Display the budget on the UI 
+    };
     var ctrlAddItem = function () {
         var input, newItem
         //1.Get the field input data
 
         input = UICtrl.getinput();
+        if (input.description !== "" && !isNaN(input.value) && input.value > 0) {
+            //2.Add the item to the budget controller 
 
-        //2.Add the item to the budget controller 
+            newItem = budgetCtrl.addItem(input.type, input.description, input.value)
+            //3.Add the item to the UI
+            UICtrl.addListItem(newItem, input.type);
 
-        newitem = budgetCtrl.addItem(input.type, input.description, input.value)
-        //3.Add the item to the UI
+            //4.Clear the fields
+            UICtrl.clearFields();
 
-        //4.Calculate the budget
+            //5.Calculate update budget
+            updatedBudget();
+        }
 
-        //5.Display the budget on the UI 
+
     };
     return {
         init: function () {
