@@ -33,6 +33,7 @@ var budgetController = (function () {
             console.log(type, des, val, data.allItems);
             if (data.allItems[type].length > 0) {
                 ID = data.allItems[type][data.allItems[type].length - 1].ID + 1;
+                console.log(ID);
             } else {
                 ID = 0;
             }
@@ -72,6 +73,26 @@ var UIController = (function () {
             // // type -> will be either inc or exp 
             // var description = document.querySelector(".add__description").value;
             // var value = docutment.querySelector(".add__value").value;
+        },
+        addListItem: function (obj, type) {
+            //create HTML string with placeholder text
+            var html, newHtml;
+            //如果改成雙引號 將會與class=後面的雙引號變成一對
+
+            if (type === 'inc') {
+                html = '<div class="item clearfix" id="income-%id%"><div class="item__description">$description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+
+            } else if (type === 'exp') {
+                html = '<div class="item clearfix" id="expense-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+
+            }
+
+            //replace the placeholder text with some actual data
+            newHtml = html.replace('%id%', obj.id);
+            newHtml = newHtml.replace('%description', obj.description);
+            newHtml = newHtml.replace('%value', obj.value);
+
+            //Insert the HTML into the DOM
         },
         getDOMstring: function () {
             //把DOMstring傳出去
