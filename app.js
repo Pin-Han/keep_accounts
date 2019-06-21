@@ -148,6 +148,7 @@ var controller = (function (budgetCtrl, UICtrl) {
 
         input = UICtrl.getinput();
         if (input.description !== "" && !isNaN(input.value) && input.value > 0) {
+            //isNaN=>判斷是否不是數字 如果是數字 就是false ;不是數字回傳 true
             //2.Add the item to the budget controller 
 
             newItem = budgetCtrl.addItem(input.type, input.description, input.value)
