@@ -16,6 +16,16 @@ var budgetController = (function () {
     // var allExpenses = [];
     // var allIncomes = [];
     // var totalExpenses = 0;
+
+    var calculateTotal = function (type) {
+        var sum = 0; //暫時儲存總金額
+        console.log(type);
+        data.allItems[type].forEach(function (cur) {
+            sum = sum + cur.value;
+        });
+        totals[type] = sum;
+    }
+
     var data = {
         allItems: {
             exp: [],
@@ -24,7 +34,9 @@ var budgetController = (function () {
         totals: {
             exp: 0,
             inc: 0
-        }
+        },
+        budget: 0,
+        percentage: -1
     };
     return {
         addItem: function (type, des, val) {
@@ -48,7 +60,24 @@ var budgetController = (function () {
             //return the new element
             return newItem;
         },
-        tessting: function () {
+        calculateBudget: function () {
+
+            //calculate total income and expense
+            calculateTotal('exp');
+            calculateTotal('inc');
+
+            //calculate the budget:income - expense
+
+            data.budget = data.totals.inc - data.totals.exp;
+            //calculate the percentage of income that we spent
+
+            //Math.floor -> 無條件捨去; Math.round->四捨五入; Math.ceil -> 無條件進位
+            data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
+        },
+        getBudget:function(){
+
+        },
+        testing: function () {
             console.log(data);
         }
     }
@@ -137,7 +166,7 @@ var controller = (function (budgetCtrl, UICtrl) {
     };
     var updatedBudget = function () {
         //1.Calculate the budget
-
+        budgetCtrl.calculateBudget();
         //2.return the budget
 
         //3.Display the budget on the UI 
