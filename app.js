@@ -23,7 +23,7 @@ var budgetController = (function () {
         data.allItems[type].forEach(function (cur) {
             sum = sum + cur.value;
         });
-        totals[type] = sum;
+        data.totals[type] = sum;
     }
 
     var data = {
@@ -72,10 +72,20 @@ var budgetController = (function () {
             //calculate the percentage of income that we spent
 
             //Math.floor -> 無條件捨去; Math.round->四捨五入; Math.ceil -> 無條件進位
-            data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
-        },
-        getBudget:function(){
 
+            if (data.totals.inc > 0) {
+                data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
+            } else {
+                data.percentage = -1;
+            }
+        },
+        getBudget: function () {
+            return {
+                budget: data.budget,
+                totalInc: data.totals.inc,
+                totalExp: data.totals.exp,
+                percentage: data.percentage
+            }
         },
         testing: function () {
             console.log(data);
@@ -92,6 +102,10 @@ var UIController = (function () {
         inputBtn: '.add__btn',
         incomeContainer: '.income__list',
         expenseContainer: '.expenses__list',
+        budgetLabel: '.budget__value',
+        incomeLabel: '.budget__income--value',
+        expenseLabel: '.budget__expenses--value',
+        percentageLabel: '.budget__expenses--percentage',
 
     };
     return {
@@ -144,6 +158,17 @@ var UIController = (function () {
             });
             fieldsArr[0].focus(); //fieldArr[0] 為輸入描述的欄位 .focus 為focus在輸入的欄位上
         },
+        displayBudget: function (obj) {
+            document.querySelector(DOMstring.budgetLabel).textContent = obj.budget;
+            document.querySelector(DOMstring.incomeLabel).textContent = obj.totalInc;
+            document.querySelector(DOMstring.expenseLabel).textContent = obj.totalExp;
+            if (obj.percentage > 0) {
+                document.querySelector(DOMstring.percentageLabel).textContent = obj.percentage + '%';
+
+            } else {
+                document.querySelector(DOMstring.percentageLabel).textContent = '---';
+            }
+        },
         getDOMstring: function () {
             //把DOMstring傳出去
             return DOMstring;
@@ -168,8 +193,10 @@ var controller = (function (budgetCtrl, UICtrl) {
         //1.Calculate the budget
         budgetCtrl.calculateBudget();
         //2.return the budget
-
+        var budget = budgetCtrl.getBudget();
         //3.Display the budget on the UI 
+        UICtrl.displayBudget(budget);
+        console.log(budget);
     };
     var ctrlAddItem = function () {
         var input, newItem
@@ -196,6 +223,12 @@ var controller = (function (budgetCtrl, UICtrl) {
     return {
         init: function () {
             console.log("application has started.");
+            UICtrl.displayBudget({
+                budget: 0,
+                totalInc: 0,
+                totalExp: 0,
+                percentage: -1
+            });
             setupEventListeners();
         }
     }
