@@ -19,7 +19,7 @@ var budgetController = (function () {
 
     var calculateTotal = function (type) {
         var sum = 0; //暫時儲存總金額
-        console.log(type);
+        // console.log(type);
         data.allItems[type].forEach(function (cur) {
             sum = sum + cur.value;
         });
@@ -44,11 +44,11 @@ var budgetController = (function () {
             //create new ID
             console.log(type, des, val, data.allItems);
             if (data.allItems[type].length > 0) {
-                ID = data.allItems[type][data.allItems[type].length - 1].ID + 1;
-                console.log(ID);
+                ID = data.allItems[type][data.allItems[type].length - 1].id + 1;
             } else {
                 ID = 0;
             }
+
             //create new item based on 'inc' or 'exp' type
             if (type === 'exp') {
                 newItem = new Expense(ID, des, val);
@@ -60,6 +60,19 @@ var budgetController = (function () {
             //return the new element
             return newItem;
         },
+        deleteItem: function (type, id) {
+            var ids, index;
+            ids = data.allItems[type].map(function (current) {
+                console.log(current);
+                return current.id;
+            });
+
+            index = ids.indexOf(id);
+            if (index !== -1) {
+                data.allItems[type].splice(index, 1); // index->要刪除的位置;1 ->要刪除的數量
+            }
+        },
+
         calculateBudget: function () {
 
             //calculate total income and expense
@@ -106,7 +119,7 @@ var UIController = (function () {
         incomeLabel: '.budget__income--value',
         expenseLabel: '.budget__expenses--value',
         percentageLabel: '.budget__expenses--percentage',
-
+        container: '.container',
     };
     return {
         getinput: function () {
@@ -125,14 +138,14 @@ var UIController = (function () {
             //create HTML string with placeholder text
             var html, newHtml, element;
             //如果改成雙引號 將會與class=後面的雙引號變成一對
-            console.log(obj);
+            // console.log(obj);
             if (type === 'inc') {
                 element = DOMstring.incomeContainer;
-                html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                html = '<div class="item clearfix" id="inc-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
 
             } else if (type === 'exp') {
                 element = DOMstring.expenseContainer;
-                html = '<div class="item clearfix" id="expense-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
                 // html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
 
             }
@@ -144,6 +157,12 @@ var UIController = (function () {
 
             //Insert the HTML into the DOM
             document.querySelector(element).insertAdjacentHTML('beforeend', newHtml);
+        },
+        deleteListItem: function (selectID) {
+
+            var el = document.getElementById(selectID);
+
+            el.parentNode.removeChild(el);
         },
         clearFields: function () {
             var fields, fieldsArr;
@@ -188,6 +207,8 @@ var controller = (function (budgetCtrl, UICtrl) {
                 ctrlAddItem();
             }
         });
+        document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem);
+
     };
     var updatedBudget = function () {
         //1.Calculate the budget
@@ -196,7 +217,7 @@ var controller = (function (budgetCtrl, UICtrl) {
         var budget = budgetCtrl.getBudget();
         //3.Display the budget on the UI 
         UICtrl.displayBudget(budget);
-        console.log(budget);
+        // console.log(budget);
     };
     var ctrlAddItem = function () {
         var input, newItem
@@ -219,6 +240,25 @@ var controller = (function (budgetCtrl, UICtrl) {
         }
 
 
+    };
+    var ctrlDeleteItem = function (event) {
+        // console.log(event.target);//-> html 元素
+        //  console.log(event.target.parentNode.parentNode);//-> 抓取html 上面2層的元素;一個parentNode為一層
+        var itemID, splitID, type, ID;
+        itemID = event.target.parentNode.parentNode.parentNode.parentNode.id;
+        // console.log(itemID);
+        if (itemID) {
+            splitID = itemID.split('-'); //把inc-1 切割開來
+            type = splitID[0];
+            ID = parseInt(splitID[1]); //將字串轉為整數
+
+        }
+        //1.Delete the item from the data structure
+        budgetCtrl.deleteItem(type, ID);
+        //2.Delete the item from the UI
+        UICtrl.deleteListItem(itemID);
+        //3.Update and show the new budget
+        updatedBudget();
     };
     return {
         init: function () {
